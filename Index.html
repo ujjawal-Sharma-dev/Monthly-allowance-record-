@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Allowance Manager - Ujjawal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root {
+      --bg-outer: #EFECE6;
+      --bg-app: #FAF9F6;
+      --card-bg: #FFFFFF;
+      --primary-yellow: #FACC15;
+      --primary-yellow-soft: #FEF3C7;
+      --dark-black: #121212;
+      --text-main: #18181B;
+      --text-muted: #71717A;
+      --border-light: #E4E4E7;
+      --green-accent: #16A34A;
+      --green-soft: #DCFCE7;
+      --red-accent: #EA580C;
+      --red-soft: #FFEDD5;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-outer);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background-color: var(--bg-app);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (min-width: 500px) {
+      .app-shell {
+        min-height: 92vh;
+        max-height: 92vh;
+        border-radius: 36px;
+        border: 6px solid #18181B;
+        overflow-y: auto;
+      }
+      .app-shell::-webkit-scrollbar { width: 4px; }
+      .app-shell::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 10px; }
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      padding: 20px 20px 95px 20px;
+      animation: fadeIn 0.22s ease;
+    }
+
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Auth Screen */
+    .auth-screen {
+      justify-content: center;
+      padding: 32px 24px;
+    }
+
+    .brand-badge {
+      width: 64px;
+      height: 64px;
+      background: var(--primary-yellow);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 20px rgba(250, 204, 21, 0.35);
+    }
+
+    .auth-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .auth-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #EFEFEF;
+      padding: 4px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+
+    .auth-tab {
+      border: none;
+      background: transparent;
+      padding: 10px;
+      border-radius: 11px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--dark-black);
+      color: #FFFFFF;
+    }
+
+    .input-group { margin-bottom: 16px; }
+
+    .input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border-light);
+      background: var(--card-bg);
+      font-size: 15px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-box:focus { border-color: var(--dark-black); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      background: var(--primary-yellow);
+      color: var(--dark-black);
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s;
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* Header Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      color: var(--dark-black);
+    }
+
+    .icon-btn:hover { background: rgba(0, 0, 0, 0.05); }
+
+    .notif-dot {
+      position: absolute;
+      top: 8px;
+      right: 9px;
+      width: 8px;
+      height: 8px;
+      background: var(--primary-yellow);
+      border-radius: 50%;
+      border: 1.5px solid var(--bg-app);
+    }
+
+    .screen-title {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .download-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--dark-black);
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+
+    .download-pill-btn:active { transform: scale(0.96); }
+
+    /* Home Hero Section */
+    .hero-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .greeting {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .hero-heading {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .hero-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      max-width: 215px;
+    }
+
+    .wallet-illustration {
+      width: 92px;
+      height: 92px;
+      flex-shrink: 0;
+    }
+
+    /* Month Strip Selector */
+    .month-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .month-strip::-webkit-scrollbar { display: none; }
+
+    .month-chip {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border-light);
+      background: var(--card-bg);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .month-chip.active {
+      background: var(--dark-black);
+      color: #FFFFFF;
+      border-color: var(--dark-black);
+    }
+
+    .month-chip.current-badge::after {
+      content: " •";
+      color: var(--primary-yellow);
+    }
+
+    /* Black Allowance Card */
+    .allowance-card {
+      background: var(--dark-black);
+      color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
+      cursor: pointer;
+    }
+
+    .allowance-card::after {
+      content: "";
+      position: absolute;
+      right: -25px;
+      bottom: -35px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 18px solid rgba(250, 204, 21, 0.85);
+      pointer-events: none;
+    }
+
+    .allowance-card::before {
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(250, 204, 21, 0.25) 0%, transparent 70%);
+    }
+
+    .month-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #E4E4E7;
+      margin-bottom: 10px;
+    }
+
+    .allowance-amount {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 4px;
+    }
+
+    .allowance-label {
+      font-size: 12.5px;
+      color: #A1A1AA;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 3 Stat Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 12px 10px;
+    }
+
+    .stat-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .stat-val {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .stat-name {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Section Header */
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .see-all {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Transaction List */
+    .tx-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .tx-item {
+      background: var(--card-bg);
+      border: 1px solid #F0F0F2;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+
+    .tx-item:hover { border-color: var(--dark-black); }
+    .tx-item:active { transform: scale(0.99); }
+
+    .tx-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .tx-cat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #F4F4F5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .tx-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      word-break: break-word;
+    }
+
+    .tx-date {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .tx-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tx-amount {
+      font-size: 14.5px;
+      font-weight: 800;
+    }
+
+    .edit-badge {
+      font-size: 11px;
+      background: #F4F4F5;
+      color: var(--text-muted);
+      padding: 4px 7px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .tx-neg { color: var(--red-accent); }
+    .tx-pos { color: var(--green-accent); }
+
+    /* Add Transaction Screen */
+    .segment-pill {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #F1F1F3;
+      padding: 4px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 10px 6px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .seg-btn.active {
+      background: var(--dark-black);
+      color: #FFFFFF;
+    }
+
+    .amount-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border-light);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+
+    .currency-symbol {
+      font-size: 20px;
+      font-weight: 800;
+      margin-right: 10px;
+      color: var(--text-main);
+    }
+
+    .amount-field {
+      border: none;
+      outline: none;
+      font-size: 20px;
+      font-weight: 800;
+      width: 100%;
+      background: transparent;
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .cat-box {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border-light);
+      border-radius: 14px;
+      padding: 12px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .cat-box.selected {
+      background: var(--primary-yellow);
+      border-color: var(--primary-yellow);
+    }
+
+    .cat-box span.emoji { font-size: 19px; }
+    .cat-box span.lbl { font-size: 11.5px; font-weight: 700; }
+
+    .split-submit-btn {
+      width: 100%;
+      display: flex;
+      border-radius: 16px;
+      overflow: hidden;
+      border: none;
+      cursor: pointer;
+      margin-top: auto;
+    }
+
+    .split-submit-main {
+      flex: 1;
+      background: var(--primary-yellow);
+      color: var(--dark-black);
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .split-submit-arrow {
+      width: 56px;
+      background: var(--dark-black);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    /* Monthly Report Screen */
+    .report-summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .rep-row { margin-bottom: 8px; }
+    .rep-row:last-child { margin-bottom: 0; }
+    .rep-lbl { font-size: 11.5px; color: var(--text-muted); display: block; }
+    .rep-val { font-size: 16px; font-weight: 800; }
+
+    .donut-wrap {
+      width: 124px;
+      height: 124px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: conic-gradient(var(--primary-yellow) 0% 40%, #F1F1F3 40% 100%);
+    }
+
+    .donut-inner {
+      width: 86px;
+      height: 86px;
+      background: var(--card-bg);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .donut-pct { font-size: 17px; font-weight: 800; }
+    .donut-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    .trend-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .bars-container {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      align-items: end;
+      height: 105px;
+      padding-top: 14px;
+      border-bottom: 1px solid #F0F0F2;
+      margin-bottom: 6px;
+      gap: 3px;
+    }
+
+    .bar-col {
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .bar-fill {
+      width: 100%;
+      max-width: 10px;
+      border-radius: 6px 6px 2px 2px;
+      transition: height 0.3s ease;
+    }
+
+    .bar-labels {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      text-align: center;
+      font-size: 9px;
+      color: var(--text-muted);
+      font-weight: 600;
+      gap: 3px;
+    }
+
+    .top-cat-item {
+      background: var(--card-bg);
+      border: 1px solid #F0F0F2;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .top-cat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: #F4F4F5;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary-yellow);
+      border-radius: 99px;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 6px 12px 6px;
+      z-index: 50;
+    }
+
+    @media (min-width: 500px) {
+      .bottom-nav {
+        position: sticky;
+        bottom: 0;
+        border-bottom-left-radius: 30px;
+        border-bottom-right-radius: 30px;
+      }
+    }
+
+    .nav-item {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .nav-item.active {
+      background: var(--primary-yellow);
+      color: var(--dark-black);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 375px;
+      border-radius: 24px;
+      padding: 22px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .export-option-btn {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-app);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      margin-bottom: 10px;
+      text-align: left;
+      transition: 0.15s;
+    }
+
+    .export-option-btn:hover {
+      border-color: var(--dark-black);
+      background: var(--primary-yellow-soft);
+    }
+
+    .btn-danger {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13.5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell" id="main-app-shell">
+
+  <!-- ==================== 0. AUTH SCREEN ==================== -->
+  <section id="screen-auth" class="screen auth-screen active">
+    <div class="brand-badge">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/>
+        <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>
+      </svg>
+    </div>
+    <h1 class="auth-title">Allowance Manager</h1>
+    <p class="auth-sub" id="auth-sub-text">Track your monthly allowance, expenses, and savings locally with backup key portability.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthMode('login')">Login</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthMode('register')">Register</button>
+    </div>
+
+    <div id="register-name-group" class="input-group hidden">
+      <label class="input-label">Display Name</label>
+      <input type="text" id="auth-name" class="input-box" placeholder="e.g. Ujjawal" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Username</label>
+      <input type="text" id="auth-username" class="input-box" placeholder="Enter your username" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Password</label>
+      <input type="password" id="auth-password" class="input-box" placeholder="••••••••" />
+    </div>
+
+    <div id="register-allowance-group" class="input-group hidden">
+      <label class="input-label">Initial Monthly Allowance (₹)</label>
+      <input type="number" id="auth-init-allowance" class="input-box" value="8000" />
+    </div>
+
+    <p id="auth-error" style="color:#DC2626; font-size:12.5px; font-weight:700; margin-bottom:12px;"></p>
+
+    <button class="btn-primary" id="auth-submit-btn" onclick="handleAuth()">
+      Sign In to Account
+    </button>
+  </section>
+
+  <!-- ==================== 1. HOME DASHBOARD ==================== -->
+  <section id="screen-home" class="screen">
+    <div class="top-bar">
+      <button class="icon-btn" onclick="navigate('reports')" title="Monthly Flow & Reports">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="17" y2="12"/><line x1="3" y1="18" x2="13" y2="18"/>
+        </svg>
+      </button>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <button class="download-pill-btn" onclick="openExportModal('selected')" title="Download Statement">
+          <span>↓</span><span>PDF / CSV</span>
+        </button>
+        <button class="icon-btn" onclick="openAllowanceModal()" title="Edit Allowance">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-row">
+      <div>
+        <div class="greeting" id="home-greeting">Hello, Ujjawal 👋</div>
+        <h2 class="hero-heading">Your Allowance<br>Manager</h2>
+        <p class="hero-sub">Track your monthly allowance, expenses, and savings.</p>
+      </div>
+      <svg class="wallet-illustration" viewBox="0 0 100 100" fill="none">
+        <rect x="24" y="16" width="44" height="30" rx="6" transform="rotate(-12 24 16)" fill="#4ADE80" stroke="#121212" stroke-width="2.5"/>
+        <rect x="34" y="18" width="42" height="28" rx="6" transform="rotate(8 34 18)" fill="#60A5FA" stroke="#121212" stroke-width="2.5"/>
+        <rect x="16" y="34" width="66" height="48" rx="14" fill="#FACC15" stroke="#121212" stroke-width="2.8"/>
+        <path d="M62 49H84V67H62C57.0294 67 53 62.9706 53 58C53 53.0294 57.0294 49 62 49Z" fill="#FDE047" stroke="#121212" stroke-width="2.6"/>
+        <circle cx="62" cy="58" r="3.5" fill="#121212"/>
+        <line x1="16" y1="22" x2="11" y2="16" stroke="#121212" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="84" y1="22" x2="89" y2="16" stroke="#121212" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="month-strip" id="home-month-strip"></div>
+
+    <div class="allowance-card" onclick="openAllowanceModal()">
+      <div class="month-pill">
+        <span>📅</span>
+        <span id="home-month-label">This Month</span>
+        <span>⌄</span>
+      </div>
+      <div class="allowance-amount" id="home-total-allowance">₹8,000</div>
+      <div class="allowance-label">
+        <span>Total Allowance</span>
+        <span style="font-size:11px; color:#FACC15;">(Tap to set/edit)</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--red-soft); color:var(--red-accent);">↓</div>
+        <div class="stat-val" id="home-spent">₹0</div>
+        <div class="stat-name">Spent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--green-soft); color:var(--green-accent);">↑</div>
+        <div class="stat-val" id="home-saved">₹0</div>
+        <div class="stat-name">Saved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--primary-yellow-soft); color:#B45309;">=</div>
+        <div class="stat-val" id="home-remaining">₹8,000</div>
+        <div class="stat-name">Remaining</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h3 class="section-title" id="home-recent-heading">Transactions (Tap any to edit)</h3>
+      <button class="see-all" onclick="navigate('reports')">Flow Chart →</button>
+    </div>
+
+    <div class="tx-list" id="home-recent-list"></div>
+
+    <button class="btn-primary" onclick="navigate('add')" style="margin-bottom:10px;">
+      <span style="font-size:20px; line-height:1;">+</span> Add Transaction
+    </button>
+
+    <button class="btn-primary" onclick="openExportModal('selected')" style="background:var(--dark-black); color:#FFFFFF;">
+      <span>↓</span> Download Month Expenses (PDF / CSV)
+    </button>
+  </section>
+
+  <!-- ==================== 2. ADD TRANSACTION ==================== -->
+  <section id="screen-add" class="screen">
+    <div class="top-bar">
+      <button class="icon-btn" onclick="navigate('home')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </button>
+      <span class="screen-title">Add Transaction</span>
+      <button class="icon-btn" onclick="navigate('reports')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="segment-pill">
+      <button class="seg-btn active" id="type-expense" onclick="setTxType('expense')">Expense</button>
+      <button class="seg-btn" id="type-income" onclick="setTxType('income')">Income</button>
+      <button class="seg-btn" id="type-transfer" onclick="setTxType('transfer')">Transfer (Save)</button>
+    </div>
+
+    <label class="input-label">Amount</label>
+    <div class="amount-input-wrap">
+      <span class="currency-symbol">₹</span>
+      <input type="number" id="tx-amount" class="amount-field" placeholder="250" />
+    </div>
+
+    <label class="input-label">Category</label>
+    <div class="cat-grid" id="category-grid"></div>
+
+    <div class="input-group">
+      <label class="input-label">Date</label>
+      <input type="date" id="tx-date" class="input-box" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Where / Note (Optional)</label>
+      <input type="text" id="tx-note" class="input-box" placeholder="e.g. Lunch at Canteen, Auto to College" />
+    </div>
+
+    <button class="split-submit-btn" onclick="saveTransaction()">
+      <span class="split-submit-main" id="submit-tx-label">Add Expense</span>
+      <span class="split-submit-arrow">→</span>
+    </button>
+  </section>
+
+  <!-- ==================== 3. MONTHLY REPORT & FLOW CHART ==================== -->
+  <section id="screen-reports" class="screen">
+    <div class="top-bar">
+      <button class="icon-btn" onclick="navigate('home')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </button>
+      <span class="screen-title">Monthly Flow Report</span>
+      <button class="download-pill-btn" onclick="openExportModal('report')" title="Download Monthly Statement">
+        <span>↓</span><span>PDF / CSV</span>
+      </button>
+    </div>
+
+    <div class="month-strip" id="report-month-strip"></div>
+
+    <div class="segment-pill">
+      <button class="seg-btn active" id="rep-tab-overview" onclick="switchReportTab('overview')">Overview</button>
+      <button class="seg-btn" id="rep-tab-categories" onclick="switchReportTab('categories')">Categories</button>
+      <button class="seg-btn" id="rep-tab-transactions" onclick="switchReportTab('transactions')">Transactions</button>
+    </div>
+
+    <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+      <input type="month" id="report-month-picker" class="input-box" style="padding:8px 12px; width:auto; font-weight:800; border:none; background:transparent; font-size:17px;" onchange="onReportMonthPickerChange()" />
+      <button class="see-all" style="color:var(--dark-black);" onclick="openAllowanceModal()">Edit Allowance ✎</button>
+    </div>
+
+    <div id="report-overview-view">
+      <div class="report-summary-card">
+        <div>
+          <div class="rep-row">
+            <span class="rep-lbl">Allowance</span>
+            <span class="rep-val" id="rep-allowance">₹8,000</span>
+          </div>
+          <div class="rep-row">
+            <span class="rep-lbl">Spent</span>
+            <span class="rep-val" id="rep-spent">₹0</span>
+          </div>
+          <div class="rep-row">
+            <span class="rep-lbl">Saved</span>
+            <span class="rep-val" id="rep-saved">₹0</span>
+          </div>
+          <div class="rep-row">
+            <span class="rep-lbl">Remaining</span>
+            <span class="rep-val" id="rep-remaining">₹8,000</span>
+          </div>
+        </div>
+
+        <div class="donut-wrap" id="rep-donut">
+          <div class="donut-inner">
+            <span class="donut-pct" id="rep-pct">0%</span>
+            <span class="donut-sub">Spent</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trend-card">
+        <div class="section-title" style="font-size:14.5px;">2-Day Bucket Expense Flow</div>
+        <div class="bars-container" id="trend-bars"></div>
+        <div class="bar-labels" id="trend-labels"></div>
+      </div>
+
+      <div class="section-head">
+        <h3 class="section-title">Where Money Went</h3>
+        <button class="see-all" onclick="switchReportTab('categories')">See All →</button>
+      </div>
+      <div id="top-categories-list"></div>
+    </div>
+
+    <div id="report-categories-view" class="hidden">
+      <div id="all-categories-list"></div>
+    </div>
+
+    <div id="report-transactions-view" class="hidden">
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Tap any expense below to edit its price, category, or note.</p>
+      <div class="tx-list" id="report-tx-list"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 4. ALL TRANSACTIONS SCREEN ==================== -->
+  <section id="screen-transactions" class="screen">
+    <div class="top-bar">
+      <button class="icon-btn" onclick="navigate('home')">←</button>
+      <span class="screen-title">All Transactions</span>
+      <button class="download-pill-btn" onclick="openExportModal('all')">
+        <span>↓</span><span>Download</span>
+      </button>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Tap any item to edit price, date, category, or delete.</p>
+    <div class="tx-list" id="full-tx-list"></div>
+  </section>
+
+  <!-- ==================== 5. PROFILE & BACKUP SETTINGS ==================== -->
+  <section id="screen-profile" class="screen">
+    <div class="top-bar">
+      <button class="icon-btn" onclick="navigate('home')">←</button>
+      <span class="screen-title">Profile & Security</span>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="allowance-card" style="cursor:default;">
+      <div class="month-pill" id="prof-storage-badge">🛡️ SHA-256 Protected Login</div>
+      <div class="allowance-amount" style="font-size:24px;" id="prof-name">Ujjawal</div>
+      <div class="allowance-label" id="prof-username">@ujjawal</div>
+    </div>
+
+    <div class="stat-card" style="margin-bottom:14px; padding:16px;">
+      <div class="section-title" style="margin-bottom:6px;">Download Expense Statement</div>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">Export selected month or all-time records as a formatted PDF or CSV.</p>
+      <button class="btn-primary" onclick="openExportModal('all')">↓ Download PDF / CSV Statement</button>
+    </div>
+
+    <div class="stat-card" style="margin-bottom:14px; padding:16px;">
+      <div class="section-title" style="margin-bottom:6px;">Monthly Allowance Settings</div>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">Set or update allowance for any specific month.</p>
+      <button class="auth-tab active" style="width:100%; padding:12px;" onclick="openAllowanceModal()">Edit Monthly Allowance</button>
+    </div>
+
+    <div class="stat-card" style="margin-bottom:18px; padding:16px;">
+      <div class="section-title" style="margin-bottom:6px;">Portable Data Backup (Export / Import)</div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Copy your transaction backup code (credentials excluded) to restore records on another device.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="auth-tab active" onclick="exportBackupCode()">Copy Backup Code</button>
+        <button class="auth-tab" style="border:1px solid #D4D4D8;" onclick="importBackupCode()">Restore Backup</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="background:#121212; color:#FFF;" onclick="logout()">Logout</button>
+  </section>
+
+  <!-- ==================== BOTTOM NAVIGATION ==================== -->
+  <nav class="bottom-nav hidden" id="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="navigate('home')">
+      <span>🏠</span><span>Home</span>
+    </button>
+    <button class="nav-item" id="nav-transactions" onclick="navigate('transactions')">
+      <span>☰</span><span>Transactions</span>
+    </button>
+    <button class="nav-item" id="nav-budget" onclick="openAllowanceModal()">
+      <span>💼</span><span>Budget</span>
+    </button>
+    <button class="nav-item" id="nav-reports" onclick="navigate('reports')">
+      <span>📊</span><span>Reports</span>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="navigate('profile')">
+      <span>👤</span><span>Profile</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ==================== EDIT TRANSACTION MODAL ==================== -->
+<div class="modal-backdrop" id="edit-tx-modal">
+  <div class="modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 class="section-title" style="font-size:18px;">Edit Transaction</h3>
+      <button class="icon-btn" onclick="closeEditTxModal()" style="width:32px; height:32px;">✕</button>
+    </div>
+
+    <input type="hidden" id="edit-tx-id" />
+
+    <div class="input-group">
+      <label class="input-label">Type</label>
+      <select id="edit-tx-type" class="input-box">
+        <option value="expense">Expense (-)</option>
+        <option value="income">Income (+)</option>
+        <option value="transfer">Transfer / Saved</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Price / Amount (₹)</label>
+      <input type="number" id="edit-tx-amount" class="input-box" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Category</label>
+      <select id="edit-tx-category" class="input-box"></select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Where / Note</label>
+      <input type="text" id="edit-tx-note" class="input-box" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Date</label>
+      <input type="date" id="edit-tx-date" class="input-box" />
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;">
+      <button class="auth-tab" style="border:1px solid #E4E4E7;" onclick="closeEditTxModal()">Cancel</button>
+      <button class="btn-primary" style="padding:12px;" onclick="updateTransaction()">Save Changes</button>
+    </div>
+
+    <button class="btn-danger" onclick="deleteTransaction()">🗑 Delete Transaction</button>
+  </div>
+</div>
+
+<!-- ==================== ALLOWANCE EDIT MODAL ==================== -->
+<div class="modal-backdrop" id="allowance-modal">
+  <div class="modal-card">
+    <h3 class="section-title" style="font-size:18px; margin-bottom:6px;">Set Monthly Allowance</h3>
+    <p id="modal-allowance-sub" style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Configure allowance for this month.</p>
+    <div class="input-group">
+      <label class="input-label">Allowance Amount (₹)</label>
+      <input type="number" id="modal-allowance-amount" class="input-box" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">Month & Start Date</label>
+      <input type="date" id="modal-allowance-date" class="input-box" />
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;">
+      <button class="auth-tab" style="border:1px solid #E4E4E7;" onclick="closeAllowanceModal()">Cancel</button>
+      <button class="btn-primary" style="padding:10px;" onclick="saveAllowanceSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== EXPORT STATEMENT MODAL ==================== -->
+<div class="modal-backdrop" id="export-modal">
+  <div class="modal-card">
+    <h3 class="section-title" style="font-size:18px; margin-bottom:6px;">Download Statement</h3>
+    <p id="export-scope-label" style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Choose format to download your expense & transaction records.</p>
+
+    <button class="export-option-btn" onclick="downloadPDFStatement()">
+      <div>
+        <div style="font-weight:800; font-size:14.5px;">📄 Download PDF Statement</div>
+        <div style="font-size:11.5px; color:var(--text-muted);">Clean formatted table with summary & notes</div>
+      </div>
+      <span style="font-weight:800;">→</span>
+    </button>
+
+    <button class="export-option-btn" onclick="downloadCSVStatement()">
+      <div>
+        <div style="font-weight:800; font-size:14.5px;">📊 Download Excel / CSV</div>
+        <div style="font-size:11.5px; color:var(--text-muted);">Spreadsheet ready (.csv) for Excel or Sheets</div>
+      </div>
+      <span style="font-weight:800;">→</span>
+    </button>
+
+    <button class="auth-tab" style="width:100%; border:1px solid #E4E4E7; margin-top:6px;" onclick="closeExportModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+  /* ==================== SECURITY UTILITIES ==================== */
+  // 1. Strict HTML Escaping to neutralize Stored XSS
+  function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // 2. Pure-JS SHA-256 Implementation (Irreversible fallback when crypto.subtle is unavailable)
+  function sha256PureJS(ascii) {
+    function rightRotate(value, amount) {
+      return (value >>> amount) | (value << (32 - amount));
+    }
+    const mathPow = Math.pow;
+    const maxWord = mathPow(2, 32);
+    let result = '';
+    const words = [];
+    const asciiBitLength = ascii.length * 8;
+    const hash = [];
+    const k = [];
+    let primeCounter = 0;
+    const isComposite = {};
+
+    for (let candidate = 2; primeCounter < 64; candidate++) {
+      if (!isComposite[candidate]) {
+        for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+        hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+        k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+      }
+    }
+
+    ascii += '\x80';
+    while ((ascii.length % 64) - 56) ascii += '\x00';
+    for (let i = 0; i < ascii.length; i++) {
+      const j = ascii.charCodeAt(i);
+      words[i >> 2] |= j << (((3 - i) % 4) * 8);
+    }
+    words[words.length] = (asciiBitLength / maxWord) | 0;
+    words[words.length] = asciiBitLength;
+
+    for (let j = 0; j < words.length; ) {
+      const w = words.slice(j, (j += 16));
+      const oldHash = hash.slice(0);
+      for (let i = 0; i < 64; i++) {
+        const w15 = w[i - 15], w2 = w[i - 2];
+        const a = hash[0], e = hash[4];
+        const temp1 =
+          hash[7] +
+          (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
+          ((e & hash[5]) ^ (~e & hash[6])) +
+          k[i] +
+          (w[i] =
+            i < 16
+              ? w[i]
+              : (w[i - 16] +
+                  (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
+                  w[i - 7] +
+                  (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) |
+                0);
+        const temp2 =
+          (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
+          ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+        hash.unshift((temp1 + temp2) | 0);
+        hash[4] = (hash[4] + temp1) | 0;
+        hash.pop();
+      }
+      for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+    }
+
+    for (let i = 0; i < 8; i++) {
+      for (let j = 3; j + 1; j--) {
+        const b = (hash[i] >> (j * 8)) & 255;
+        result += (b < 16 ? 0 : '') + b.toString(16);
+      }
+    }
+    return result;
+  }
+
+  async function hashPassword(username, password) {
+    const salted = `allowance_v4_salt:${username}:${password}`;
+    try {
+      if (window.crypto && window.crypto.subtle) {
+        const msgBuffer = new TextEncoder().encode(salted);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (e) {}
+    const utf8Bytes = unescape(encodeURIComponent(salted));
+    return sha256PureJS(utf8Bytes);
+  }
+
+  /* ==================== SAFE STORAGE WRAPPER ==================== */
+  const memoryStore = {};
+  const safeStore = {
+    get(key) {
+      try { return localStorage.getItem(key); } catch (e) { return memoryStore[key] || null; }
+    },
+    set(key, val) {
+      memoryStore[key] = val;
+      try { localStorage.setItem(key, val); } catch (e) {}
+    },
+    remove(key) {
+      delete memoryStore[key];
+      try { localStorage.removeItem(key); } catch (e) {}
+    }
+  };
+
+  /* ==================== APPLICATION STATE ==================== */
+  const FIREBASE_DB_URL = "";
+
+  const CATEGORIES = [
+    { id: 'Food', label: 'Food & Meals', short: 'Food', emoji: '🍴' },
+    { id: 'Travel', label: 'Travel', short: 'Travel', emoji: '🚌' },
+    { id: 'Shopping', label: 'Shopping', short: 'Shopping', emoji: '🛒' },
+    { id: 'Study', label: 'Study', short: 'Study', emoji: '📖' },
+    { id: 'Rent', label: 'Rent', short: 'Rent', emoji: '🏠' },
+    { id: 'Health', label: 'Health', short: 'Health', emoji: '🤍' },
+    { id: 'Bills', label: 'Bills', short: 'Bills', emoji: '📞' },
+    { id: 'Other', label: 'Other', short: 'Other', emoji: '•••' }
+  ];
+
+  let authMode = 'login';
+  let currentUser = null;
+  let userData = null;
+  let selectedTxType = 'expense';
+  let selectedCategory = 'Food';
+  let selectedMonth = null;
+  let currentExportScope = 'selected';
+
+  function getTodayISO() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now - offset).toISOString().split('T')[0];
+  }
+
+  function getCurrentMonthISO() {
+    return getTodayISO().slice(0, 7);
+  }
+
+  function formatMonthLabel(monthISO) {
+    const [y, m] = monthISO.split('-');
+    const d = new Date(parseInt(y, 10), parseInt(m, 10) - 1, 1);
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  function getAvailableMonths() {
+    const set = new Set([getCurrentMonthISO()]);
+    const [cy, cm] = getCurrentMonthISO().split('-').map(Number);
+    const nextDate = new Date(cy, cm, 1);
+    const nextISO = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
+    set.add(nextISO);
+
+    if (userData) {
+      Object.keys(userData.allowances || {}).forEach(m => set.add(m));
+      (userData.transactions || []).forEach(t => {
+        if (t.date && t.date.length >= 7) set.add(t.date.slice(0, 7));
+      });
+    }
+    return Array.from(set).sort();
+  }
+
+  function selectMonth(monthISO) {
+    selectedMonth = monthISO;
+    document.getElementById('report-month-picker').value = monthISO;
+    renderAll();
+  }
+
+  function onReportMonthPickerChange() {
+    const val = document.getElementById('report-month-picker').value;
+    if (val) {
+      selectedMonth = val;
+      renderAll();
+    }
+  }
+
+  function renderMonthStrips() {
+    const months = getAvailableMonths();
+    const currentM = getCurrentMonthISO();
+    const stripHTML = months.map(m => {
+      const isActive = m === selectedMonth;
+      const isCurrent = m === currentM;
+      const safeM = escapeHTML(m);
+      return `
+        <button class="month-chip ${isActive ? 'active' : ''} ${isCurrent ? 'current-badge' : ''}"
+                onclick="selectMonth('${safeM}')">
+          ${escapeHTML(formatMonthLabel(m))}
+        </button>
+      `;
+    }).join('');
+
+    document.getElementById('home-month-strip').innerHTML = stripHTML;
+    document.getElementById('report-month-strip').innerHTML = stripHTML;
+  }
+
+  function initCategoryGrid() {
+    const grid = document.getElementById('category-grid');
+    grid.innerHTML = CATEGORIES.map(cat => `
+      <div class="cat-box ${cat.id === selectedCategory ? 'selected' : ''}" onclick="selectCategory('${escapeHTML(cat.id)}')">
+        <span class="emoji">${cat.emoji}</span>
+        <span class="lbl">${escapeHTML(cat.short)}</span>
+      </div>
+    `).join('');
+
+    const editSelect = document.getElementById('edit-tx-category');
+    editSelect.innerHTML = CATEGORIES.map(cat =>
+      `<option value="${escapeHTML(cat.id)}">${cat.emoji} ${escapeHTML(cat.label)}</option>`
+    ).join('') + `<option value="Allowance">👛 Monthly Allowance</option>`;
+  }
+
+  function selectCategory(id) {
+    selectedCategory = id;
+    initCategoryGrid();
+  }
+
+  function setTxType(type) {
+    selectedTxType = type;
+    ['expense', 'income', 'transfer'].forEach(t => {
+      document.getElementById('type-' + t).classList.toggle('active', t === type);
+    });
+    const labelMap = { expense: 'Add Expense', income: 'Add Income', transfer: 'Save to Vault' };
+    document.getElementById('submit-tx-label').textContent = labelMap[type];
+  }
+
+  function switchAuthMode(mode) {
+    authMode = mode;
+    document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+    document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+    document.getElementById('register-name-group').classList.toggle('hidden', mode === 'login');
+    document.getElementById('register-allowance-group').classList.toggle('hidden', mode === 'login');
+    document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Sign In to Account' : 'Create Account';
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  async function saveToStorage(username, payload) {
+    safeStore.set('allowance_user_' + username, JSON.stringify(payload));
+    if (FIREBASE_DB_URL) {
+      try {
+        await fetch(`${FIREBASE_DB_URL}/users/${encodeURIComponent(username)}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {}
+    }
+  }
+
+  async function loadFromStorage(username) {
+    if (FIREBASE_DB_URL) {
+      try {
+        const res = await fetch(`${FIREBASE_DB_URL}/users/${encodeURIComponent(username)}.json`);
+        const cloudData = await res.json();
+        if (cloudData) {
+          safeStore.set('allowance_user_' + username, JSON.stringify(cloudData));
+          return cloudData;
+        }
+      } catch (e) {}
+    }
+    const raw = safeStore.get('allowance_user_' + username);
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  async function handleAuth() {
+    const username = document.getElementById('auth-username').value.trim().toLowerCase();
+    const password = document.getElementById('auth-password').value;
+    const errEl = document.getElementById('auth-error');
+
+    if (!username || !password) {
+      errEl.textContent = 'Please enter both username and password.';
+      return;
+    }
+
+    const passHash = await hashPassword(username, password);
+
+    if (authMode === 'register') {
+      const displayName = document.getElementById('auth-name').value.trim() || username;
+      const initAllowance = parseFloat(document.getElementById('auth-init-allowance').value) || 8000;
+      const existing = await loadFromStorage(username);
+
+      if (existing) {
+        errEl.textContent = 'Username already exists. Please login.';
+        return;
+      }
+
+      const today = getTodayISO();
+      const monthKey = getCurrentMonthISO();
+
+      userData = {
+        username,
+        displayName,
+        passHash,
+        allowances: {
+          [monthKey]: { amount: initAllowance, date: today }
+        },
+        transactions: [
+          {
+            id: Date.now(),
+            type: 'income',
+            category: 'Allowance',
+            note: 'Monthly Allowance',
+            amount: initAllowance,
+            date: today,
+            time: '09:00 AM'
+          }
+        ]
+      };
+
+      await saveToStorage(username, userData);
+    } else {
+      const existing = await loadFromStorage(username);
+      if (!existing || existing.passHash !== passHash) {
+        errEl.textContent = 'Invalid username or password.';
+        return;
+      }
+      userData = existing;
+    }
+
+    currentUser = username;
+    safeStore.set('allowance_active_session', username);
+    enterApp();
+  }
+
+  function enterApp() {
+    selectedMonth = getCurrentMonthISO();
+    document.getElementById('screen-auth').classList.remove('active');
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    document.getElementById('tx-date').value = getTodayISO();
+    document.getElementById('report-month-picker').value = selectedMonth;
+    document.getElementById('prof-storage-badge').textContent = FIREBASE_DB_URL
+      ? '☁️ Cloud Synced + SHA-256'
+      : '🛡️ Local Storage + SHA-256';
+    initCategoryGrid();
+    navigate('home');
+    renderAll();
+  }
+
+  function logout() {
+    safeStore.remove('allowance_active_session');
+    currentUser = null;
+    userData = null;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('bottom-nav').classList.add('hidden');
+    document.getElementById('screen-auth').classList.add('active');
+  }
+
+  function navigate(screenName) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + screenName).classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navEl = document.getElementById('nav-' + screenName);
+    if (navEl) navEl.classList.add('active');
+
+    if (screenName === 'add') {
+      const curM = getCurrentMonthISO();
+      document.getElementById('tx-date').value = (selectedMonth === curM) ? getTodayISO() : `${selectedMonth}-01`;
+    }
+
+    renderAll();
+  }
+
+  function openAllowanceModal() {
+    const targetMonth = selectedMonth || getCurrentMonthISO();
+    const current = userData.allowances[targetMonth] || { amount: 0, date: `${targetMonth}-01` };
+    document.getElementById('modal-allowance-sub').textContent = `Setting allowance for ${formatMonthLabel(targetMonth)}`;
+    document.getElementById('modal-allowance-amount').value = current.amount;
+    document.getElementById('modal-allowance-date').value = current.date || `${targetMonth}-01`;
+    document.getElementById('allowance-modal').classList.add('open');
+  }
+
+  function closeAllowanceModal() {
+    document.getElementById('allowance-modal').classList.remove('open');
+  }
+
+  async function saveAllowanceSettings() {
+    const amount = parseFloat(document.getElementById('modal-allowance-amount').value) || 0;
+    const date = document.getElementById('modal-allowance-date').value || `${selectedMonth}-01`;
+    const monthKey = date.slice(0, 7);
+
+    userData.allowances[monthKey] = { amount, date };
+    selectedMonth = monthKey;
+    document.getElementById('report-month-picker').value = monthKey;
+
+    await saveToStorage(currentUser, userData);
+    closeAllowanceModal();
+    renderAll();
+  }
+
+  async function saveTransaction() {
+    const amount = parseFloat(document.getElementById('tx-amount').value);
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid amount.');
+      return;
+    }
+
+    const date = document.getElementById('tx-date').value || getTodayISO();
+    const note = document.getElementById('tx-note').value.trim();
+    const catObj = CATEGORIES.find(c => c.id === selectedCategory);
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const newTx = {
+      id: Date.now(),
+      type: selectedTxType,
+      category: selectedCategory,
+      note: note || (catObj ? catObj.label : selectedCategory),
+      amount,
+      date,
+      time: nowTime
+    };
+
+    userData.transactions.unshift(newTx);
+    selectedMonth = date.slice(0, 7);
+    document.getElementById('report-month-picker').value = selectedMonth;
+
+    await saveToStorage(currentUser, userData);
+
+    document.getElementById('tx-amount').value = '';
+    document.getElementById('tx-note').value = '';
+    navigate('home');
+  }
+
+  function openEditTxModal(txId) {
+    const tx = userData.transactions.find(t => t.id === txId);
+    if (!tx) return;
+
+    document.getElementById('edit-tx-id').value = tx.id;
+    document.getElementById('edit-tx-type').value = tx.type;
+    document.getElementById('edit-tx-amount').value = tx.amount;
+    document.getElementById('edit-tx-category').value = tx.category;
+    document.getElementById('edit-tx-note').value = tx.note;
+    document.getElementById('edit-tx-date').value = tx.date;
+
+    document.getElementById('edit-tx-modal').classList.add('open');
+  }
+
+  function closeEditTxModal() {
+    document.getElementById('edit-tx-modal').classList.remove('open');
+  }
+
+  async function updateTransaction() {
+    const txId = Number(document.getElementById('edit-tx-id').value);
+    const idx = userData.transactions.findIndex(t => t.id === txId);
+    if (idx === -1) return;
+
+    const newAmount = parseFloat(document.getElementById('edit-tx-amount').value);
+    if (!newAmount || newAmount <= 0) {
+      alert('Please enter a valid price/amount.');
+      return;
+    }
+
+    const newType = document.getElementById('edit-tx-type').value;
+    const newCat = document.getElementById('edit-tx-category').value;
+    const newNote = document.getElementById('edit-tx-note').value.trim();
+    const newDate = document.getElementById('edit-tx-date').value || userData.transactions[idx].date;
+
+    userData.transactions[idx] = {
+      ...userData.transactions[idx],
+      type: newType,
+      amount: newAmount,
+      category: newCat,
+      note: newNote || newCat,
+      date: newDate
+    };
+
+    await saveToStorage(currentUser, userData);
+    closeEditTxModal();
+    renderAll();
+  }
+
+  async function deleteTransaction() {
+    const txId = Number(document.getElementById('edit-tx-id').value);
+    if (!confirm('Delete this transaction permanently?')) return;
+
+    userData.transactions = userData.transactions.filter(t => t.id !== txId);
+    await saveToStorage(currentUser, userData);
+    closeEditTxModal();
+    renderAll();
+  }
+
+  function formatINR(num) {
+    return '₹' + Math.round(Number(num) || 0).toLocaleString('en-IN');
+  }
+
+  function formatDisplayDate(isoDate, timeStr) {
+    const today = getTodayISO();
+    if (isoDate === today) return `Today, ${timeStr}`;
+    const [y, m, d] = isoDate.split('-');
+    const dt = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    const shortDate = dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return `${shortDate}, ${timeStr}`;
+  }
+
+  // XSS-Safe Transaction Item Renderer
+  function renderTxItemHTML(tx) {
+    const cat = CATEGORIES.find(c => c.id === tx.category);
+    const emoji = tx.category === 'Allowance' ? '👛' : (cat ? cat.emoji : '💸');
+    const isPositive = tx.type === 'income';
+    const sign = isPositive ? '+' : '-';
+    const cls = isPositive ? 'tx-pos' : 'tx-neg';
+    const safeId = Number(tx.id);
+    const safeNote = escapeHTML(tx.note);
+    const safeCat = escapeHTML(tx.category);
+    const safeDateStr = escapeHTML(formatDisplayDate(tx.date, tx.time || '12:00 PM'));
+
+    return `
+      <div class="tx-item" onclick="openEditTxModal(${safeId})" title="Tap to edit price or details">
+        <div class="tx-left">
+          <div class="tx-cat-icon">${emoji}</div>
+          <div>
+            <div class="tx-name">${safeNote}</div>
+            <div class="tx-date">${safeDateStr} • ${safeCat}</div>
+          </div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount ${cls}">${sign}${formatINR(tx.amount)}</div>
+          <span class="edit-badge">✎</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function switchReportTab(tab) {
+    ['overview', 'categories', 'transactions'].forEach(t => {
+      document.getElementById('rep-tab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('report-' + t + '-view').classList.toggle('hidden', t !== tab);
+    });
+  }
+
+  function renderAll() {
+    if (!userData) return;
+
+    const currentM = getCurrentMonthISO();
+    if (!selectedMonth) selectedMonth = currentM;
+
+    renderMonthStrips();
+
+    document.getElementById('home-greeting').textContent = `Hello, ${userData.displayName} 👋`;
+    document.getElementById('prof-name').textContent = userData.displayName;
+    document.getElementById('prof-username').textContent = `@${userData.username}`;
+
+    const isCurrent = selectedMonth === currentM;
+    const labelPrefix = isCurrent ? 'This Month' : 'Selected Month';
+    document.getElementById('home-month-label').textContent = `${labelPrefix} (${formatMonthLabel(selectedMonth)})`;
+
+    const homeAllowanceObj = userData.allowances[selectedMonth] || { amount: 0 };
+    const monthTxs = userData.transactions.filter(t => t.date.startsWith(selectedMonth));
+
+    let spent = 0;
+    let saved = 0;
+    let extraIncome = 0;
+
+    monthTxs.forEach(t => {
+      if (t.type === 'expense') spent += Number(t.amount) || 0;
+      else if (t.type === 'transfer') saved += Number(t.amount) || 0;
+      else if (t.type === 'income' && t.category !== 'Allowance') extraIncome += Number(t.amount) || 0;
+    });
+
+    const totalBudget = (Number(homeAllowanceObj.amount) || 0) + extraIncome;
+    const remaining = totalBudget - spent - saved;
+
+    document.getElementById('home-total-allowance').textContent = formatINR(totalBudget);
+    document.getElementById('home-spent').textContent = formatINR(spent);
+    document.getElementById('home-saved').textContent = formatINR(saved);
+    document.getElementById('home-remaining').textContent = formatINR(remaining);
+
+    document.getElementById('home-recent-heading').textContent = `${formatMonthLabel(selectedMonth)} Expenses (Tap to edit)`;
+    const recentHTML = monthTxs.map(renderTxItemHTML).join('');
+    document.getElementById('home-recent-list').innerHTML =
+      recentHTML || `<p style="color:#71717A;font-size:13px;">No expenses recorded in ${escapeHTML(formatMonthLabel(selectedMonth))}. Tap "+ Add Transaction" or tap the black card above to set allowance.</p>`;
+
+    document.getElementById('full-tx-list').innerHTML =
+      userData.transactions.map(renderTxItemHTML).join('') || '<p style="color:#71717A;font-size:13px;">No transactions recorded yet.</p>';
+
+    document.getElementById('report-month-picker').value = selectedMonth;
+    const catTotals = {};
+    monthTxs.forEach(t => {
+      if (t.type === 'expense') {
+        catTotals[t.category] = (catTotals[t.category] || 0) + (Number(t.amount) || 0);
+      }
+    });
+
+    const spentPct = totalBudget > 0 ? Math.min(100, ((spent / totalBudget) * 100)).toFixed(1) : 0;
+
+    document.getElementById('rep-allowance').textContent = formatINR(totalBudget);
+    document.getElementById('rep-spent').textContent = formatINR(spent);
+    document.getElementById('rep-saved').textContent = formatINR(saved);
+    document.getElementById('rep-remaining').textContent = formatINR(remaining);
+    document.getElementById('rep-pct').textContent = `${spentPct}%`;
+    document.getElementById('rep-donut').style.background = `conic-gradient(#FACC15 0% ${spentPct}%, #F1F1F3 ${spentPct}% 100%)`;
+
+    // 15 Buckets + 15 Exact Aligned Day Labels
+    const buckets = new Array(15).fill(0);
+    monthTxs.filter(t => t.type === 'expense').forEach(t => {
+      const day = parseInt(t.date.split('-')[2], 10) || 1;
+      const idx = Math.min(14, Math.floor((day - 1) / 2));
+      buckets[idx] += Number(t.amount) || 0;
+    });
+    const maxBucket = Math.max(...buckets, 500);
+    document.getElementById('trend-bars').innerHTML = buckets.map((val, i) => {
+      const h = Math.max(12, Math.round((val / maxBucket) * 85));
+      const color = i % 2 === 0 ? '#FACC15' : '#121212';
+      return `<div class="bar-col"><div class="bar-fill" style="height:${h}px; background:${color};"></div></div>`;
+    }).join('');
+    document.getElementById('trend-labels').innerHTML = buckets.map((_, i) =>
+      `<span>${i * 2 + 1}</span>`
+    ).join('');
+
+    const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+    const renderCatCard = ([catId, amt]) => {
+      const cat = CATEGORIES.find(c => c.id === catId) || { label: catId, emoji: '💸' };
+      const pct = spent > 0 ? Math.round((amt / spent) * 100) : 0;
+      return `
+        <div class="top-cat-item">
+          <div class="top-cat-row">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:18px;">${cat.emoji}</span>
+              <span style="font-weight:700; font-size:14px;">${escapeHTML(cat.label)}</span>
+            </div>
+            <div style="font-size:13.5px; font-weight:800;">
+              <span style="color:#71717A; margin-right:8px;">${pct}%</span>${formatINR(amt)}
+            </div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%;"></div>
+          </div>
+        </div>
+      `;
+    };
+
+    document.getElementById('top-categories-list').innerHTML =
+      sortedCats.slice(0, 3).map(renderCatCard).join('') || '<p style="color:#71717A;font-size:13px;">No expenses recorded this month.</p>';
+    document.getElementById('all-categories-list').innerHTML =
+      sortedCats.map(renderCatCard).join('') || '<p style="color:#71717A;font-size:13px;">No expenses recorded this month.</p>';
+    document.getElementById('report-tx-list').innerHTML =
+      monthTxs.map(renderTxItemHTML).join('') || '<p style="color:#71717A;font-size:13px;">No transactions in this month.</p>';
+  }
+
+  /* ==================== EXPORT PDF & CSV ==================== */
+  function openExportModal(scope) {
+    currentExportScope = scope;
+    const labelEl = document.getElementById('export-scope-label');
+    if (scope === 'selected' || scope === 'report') {
+      labelEl.textContent = `Exporting ${formatMonthLabel(selectedMonth)} (${selectedMonth}) statement.`;
+    } else {
+      labelEl.textContent = `Exporting Complete Transaction History (${userData.transactions.length} records).`;
+    }
+    document.getElementById('export-modal').classList.add('open');
+  }
+
+  function closeExportModal() {
+    document.getElementById('export-modal').classList.remove('open');
+  }
+
+  function getExportDataset() {
+    let txs = userData.transactions;
+    let periodLabel = 'All_Time';
+    let allowanceAmt = 0;
+
+    if (currentExportScope === 'selected' || currentExportScope === 'report') {
+      const m = selectedMonth || getCurrentMonthISO();
+      txs = txs.filter(t => t.date.startsWith(m));
+      periodLabel = m;
+      allowanceAmt = (userData.allowances[m] || { amount: 0 }).amount;
+    } else {
+      allowanceAmt = Object.values(userData.allowances).reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+    }
+
+    let spent = 0, saved = 0, extraIncome = 0;
+    txs.forEach(t => {
+      if (t.type === 'expense') spent += Number(t.amount) || 0;
+      else if (t.type === 'transfer') saved += Number(t.amount) || 0;
+      else if (t.type === 'income' && t.category !== 'Allowance') extraIncome += Number(t.amount) || 0;
+    });
+
+    return {
+      txs,
+      periodLabel,
+      totalAllowance: allowanceAmt + extraIncome,
+      spent,
+      saved,
+      remaining: (allowanceAmt + extraIncome) - spent - saved
+    };
+  }
+
+  function downloadCSVStatement() {
+    const { txs, periodLabel, totalAllowance, spent, saved, remaining } = getExportDataset();
+    if (!txs.length) {
+      alert('No transactions available to download for this period.');
+      return;
+    }
+
+    const rows = [
+      ['Allowance Manager Statement'],
+      ['Account Holder', userData.displayName, 'Period', periodLabel],
+      ['Total Allowance (INR)', totalAllowance, 'Total Spent (INR)', spent, 'Saved (INR)', saved, 'Remaining (INR)', remaining],
+      [],
+      ['Date', 'Time', 'Type', 'Category', 'Where / Note', 'Amount (INR)']
+    ];
+
+    txs.forEach(t => {
+      const signedAmt = t.type === 'income' ? t.amount : -t.amount;
+      rows.push([
+        t.date,
+        t.time || '',
+        t.type.toUpperCase(),
+        t.category,
+        `"${(t.note || '').replace(/"/g, '""')}"`,
+        signedAmt
+      ]);
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Allowance_Statement_${userData.username}_${periodLabel}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    closeExportModal();
+  }
+
+  function downloadPDFStatement() {
+    const { txs, periodLabel, totalAllowance, spent, saved, remaining } = getExportDataset();
+    if (!txs.length) {
+      alert('No transactions available to download for this period.');
+      return;
+    }
+
+    if (!window.jspdf) {
+      alert('PDF library still loading, please try again in 2 seconds or use CSV download.');
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, 210, 38, 'F');
+
+    doc.setFillColor(250, 204, 21);
+    doc.rect(0, 36, 210, 2.5, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Allowance Manager - Expense Statement', 14, 18);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(212, 212, 216);
+    doc.text(`Account: ${userData.displayName} (@${userData.username})   |   Period: ${periodLabel}`, 14, 28);
+
+    doc.setFillColor(250, 249, 246);
+    doc.setDrawColor(228, 228, 231);
+    doc.roundedRect(14, 45, 182, 22, 3, 3, 'FD');
+
+    doc.setTextColor(24, 24, 27);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Allowance: Rs. ${Math.round(totalAllowance).toLocaleString('en-IN')}`, 20, 58);
+    doc.setTextColor(234, 88, 12);
+    doc.text(`Spent: Rs. ${Math.round(spent).toLocaleString('en-IN')}`, 72, 58);
+    doc.setTextColor(22, 163, 74);
+    doc.text(`Saved: Rs. ${Math.round(saved).toLocaleString('en-IN')}`, 116, 58);
+    doc.setTextColor(24, 24, 27);
+    doc.text(`Remaining: Rs. ${Math.round(remaining).toLocaleString('en-IN')}`, 154, 58);
+
+    const tableRows = txs.map((t, index) => [
+      index + 1,
+      `${t.date} (${t.time || ''})`,
+      t.type.toUpperCase(),
+      t.category,
+      t.note || '-',
+      `${t.type === 'income' ? '+' : '-'} Rs. ${Math.round(t.amount).toLocaleString('en-IN')}`
+    ]);
+
+    doc.autoTable({
+      startY: 74,
+      head: [['#', 'Date & Time', 'Type', 'Category', 'Where / Note', 'Amount']],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [18, 18, 18],
+        textColor: [250, 204, 21],
+        fontStyle: 'bold',
+        fontSize: 9.5
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [24, 24, 27]
+      },
+      alternateRowStyles: {
+        fillColor: [250, 249, 246]
+      },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        5: { halign: 'right', fontStyle: 'bold' }
+      }
+    });
+
+    doc.save(`Allowance_Statement_${userData.username}_${periodLabel}.pdf`);
+    closeExportModal();
+  }
+
+  /* ==================== SAFE DATA BACKUP EXPORT / IMPORT (NO CREDENTIALS) ==================== */
+  function exportBackupCode() {
+    // Strip passHash before exporting so credentials are never leaked
+    const { passHash, ...portableData } = userData;
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(portableData))));
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(encoded);
+      alert('Backup Code copied (password hash excluded for safety). Register on another device and use Restore Backup.');
+    } else {
+      prompt('Copy your Backup Code:', encoded);
+    }
+  }
+
+  async function importBackupCode() {
+    const key = prompt('Paste your Portable Backup Code:');
+    if (!key) return;
+    try {
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(key.trim()))));
+
+      // Strict schema validation
+      if (
+        !decoded ||
+        typeof decoded !== 'object' ||
+        !Array.isArray(decoded.transactions) ||
+        typeof decoded.allowances !== 'object' ||
+        decoded.allowances === null
+      ) {
+        alert('Invalid or corrupted Backup Code structure.');
+        return;
+      }
+
+      const validTypes = ['expense', 'income', 'transfer'];
+      const sanitizedTxs = decoded.transactions
+        .filter(t => t && typeof t.amount === 'number' && t.amount > 0 && typeof t.date === 'string')
+        .map((t, idx) => ({
+          id: Number(t.id) || (Date.now() + idx),
+          type: validTypes.includes(t.type) ? t.type : 'expense',
+          category: String(t.category || 'Other').slice(0, 30),
+          note: String(t.note || '').slice(0, 120),
+          amount: Number(t.amount),
+          date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : getTodayISO(),
+          time: String(t.time || '12:00 PM').slice(0, 15)
+        }));
+
+      const sanitizedAllowances = {};
+      Object.entries(decoded.allowances).forEach(([k, v]) => {
+        if (/^\d{4}-\d{2}$/.test(k) && v && typeof v.amount === 'number') {
+          sanitizedAllowances[k] = {
+            amount: Number(v.amount),
+            date: typeof v.date === 'string' ? v.date : `${k}-01`
+          };
+        }
+      });
+
+      userData.allowances = sanitizedAllowances;
+      userData.transactions = sanitizedTxs;
+      await saveToStorage(currentUser, userData);
+      renderAll();
+      alert(`Backup restored successfully (${sanitizedTxs.length} transactions imported).`);
+    } catch (e) {
+      alert('Failed to decode Backup Code. Ensure the full string was copied.');
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    const savedUser = safeStore.get('allowance_active_session');
+    if (savedUser) {
+      const data = await loadFromStorage(savedUser);
+      if (data) {
+        currentUser = savedUser;
+        userData = data;
+        enterApp();
+      }
+    }
+  });
+</script>
+</body>
+</html>
